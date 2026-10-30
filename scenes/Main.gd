@@ -38,6 +38,7 @@ func _ready() -> void:
 
 
 func _build_world() -> void:
+	_trace("environment")
 	# light + sky
 	var env := WorldEnvironment.new()
 	var e := Environment.new()
@@ -66,11 +67,13 @@ func _build_world() -> void:
 	sun.directional_shadow_max_distance = 160
 	add_child(sun)
 
+	_trace("terrain mesh")
 	# island
 	terrain_mesh = TerrainMesh.new()
 	terrain_mesh.build(terrain)
 	add_child(terrain_mesh)
 
+	_trace("sea")
 	# sea
 	var sea := MeshInstance3D.new()
 	var plane := PlaneMesh.new()
@@ -85,6 +88,7 @@ func _build_world() -> void:
 	sea.position = Vector3(TerrainData.N * 0.5, TerrainData.SEA * TerrainData.HEIGHT_SCALE + 0.05, TerrainData.N * 0.5)
 	add_child(sea)
 
+	_trace("springs")
 	# springs
 	var spring_mesh := SphereMesh.new()
 	spring_mesh.radius = 0.35
@@ -104,11 +108,13 @@ func _build_world() -> void:
 		mi.position = terrain.world_pos(s.x, s.y, 0.4)
 		springs_node.add_child(mi)
 
+	_trace("rivers")
 	# rivers
 	rivers = RiverRenderer.new()
 	rivers.setup(sim, terrain, player.id)
 	add_child(rivers)
 
+	_trace("camera + hud")
 	# camera + hud
 	camera = CameraRig.new()
 	camera.setup(terrain)
@@ -118,9 +124,20 @@ func _build_world() -> void:
 	hud = HUD.new()
 	add_child(hud)
 	hud.again_button.pressed.connect(func(): get_tree().reload_current_scene())
+	_trace("world built")
+
+
+var _frames := 0
+
+
+func _trace(what: String) -> void:
+	print("  build: %s" % what)
 
 
 func _process(dt: float) -> void:
+	_frames += 1
+	if _frames <= 3 or _frames == 60 or _frames == 300:
+		print("  frame %d ok (%.1f fps)" % [_frames, Engine.get_frames_per_second()])
 	if _running:
 		var steer := 0.0
 		if Input.is_physical_key_pressed(KEY_A) or Input.is_physical_key_pressed(KEY_LEFT):

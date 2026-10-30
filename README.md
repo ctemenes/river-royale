@@ -2,11 +2,11 @@
 
 A battle royale where you play as a river. Eighty rivers spawn on one summit after a storm, carve downhill, swallow anything smaller, drink from springs, and race to be the biggest thing to hit the coast.
 
-Godot 4.3, GDScript. Target: Steam (Windows, Linux, macOS), online multiplayer, 8 to 80 players with bot backfill.
+Godot 4.7, GDScript. Target: Steam (Windows, Linux, macOS), online multiplayer, 8 to 80 players with bot backfill.
 
 ## Run it
 
-1. Install [Godot 4.3](https://godotengine.org/download) (standard build, not .NET).
+1. Install [Godot 4.x](https://godotengine.org/download) (standard build, not .NET).
 2. Open Godot, Import, pick this folder's `project.godot`.
 3. Press F5.
 
