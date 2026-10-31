@@ -11,15 +11,33 @@ extends Node3D
 ## camera; tune PROP_SCALE per prop by eye.
 
 const KIT := "res://assets/kit/"
+const KENNEY := "res://assets/kenney/nature-kit/"
 
-# name, scale (world units per model metre), count, rule
+# path, scale (world units per model unit), count, rule. Kenney models are
+# roughly 1 unit = 1 m; the Higgsfield kit is in metres too. Oversized on
+# purpose so they read from the chase camera (1 world unit = 100 m).
 const PROPS := [
-	{"file": "pine_tree",    "scale": 0.28, "count": 2600, "rule": "forest"},
-	{"file": "shrub",        "scale": 0.18, "count": 1800, "rule": "lowland"},
-	{"file": "boulder",      "scale": 0.45, "count": 900,  "rule": "slope"},
-	{"file": "rock_outcrop", "scale": 0.40, "count": 350,  "rule": "ridge"},
-	{"file": "dead_tree",    "scale": 0.22, "count": 400,  "rule": "treeline"},
-	{"file": "driftwood",    "scale": 0.30, "count": 250,  "rule": "beach"},
+	{"file": KENNEY + "tree_pineTallA.glb",     "scale": 0.20, "count": 900, "rule": "forest"},
+	{"file": KENNEY + "tree_pineTallB.glb",     "scale": 0.20, "count": 900, "rule": "forest"},
+	{"file": KENNEY + "tree_pineDefaultA.glb",  "scale": 0.22, "count": 700, "rule": "forest"},
+	{"file": KENNEY + "tree_pineRoundA.glb",    "scale": 0.22, "count": 500, "rule": "forest"},
+	{"file": KENNEY + "tree_default.glb",       "scale": 0.24, "count": 500, "rule": "lowland"},
+	{"file": KENNEY + "tree_oak.glb",           "scale": 0.24, "count": 350, "rule": "lowland"},
+	{"file": KENNEY + "plant_bushLarge.glb",    "scale": 0.22, "count": 900, "rule": "lowland"},
+	{"file": KENNEY + "plant_bush.glb",         "scale": 0.22, "count": 700, "rule": "lowland"},
+	{"file": KENNEY + "tree_pineSmallA.glb",    "scale": 0.20, "count": 400, "rule": "treeline"},
+	{"file": KENNEY + "stump_oldTall.glb",      "scale": 0.25, "count": 150, "rule": "treeline"},
+	{"file": KENNEY + "rock_largeA.glb",        "scale": 0.30, "count": 300, "rule": "slope"},
+	{"file": KENNEY + "rock_largeC.glb",        "scale": 0.30, "count": 300, "rule": "slope"},
+	{"file": KENNEY + "rock_smallA.glb",        "scale": 0.30, "count": 400, "rule": "slope"},
+	{"file": KENNEY + "rock_tallB.glb",         "scale": 0.32, "count": 200, "rule": "ridge"},
+	{"file": KENNEY + "rock_tallE.glb",         "scale": 0.32, "count": 200, "rule": "ridge"},
+	{"file": KENNEY + "stone_largeD.glb",       "scale": 0.30, "count": 150, "rule": "ridge"},
+	{"file": KENNEY + "tree_palmTall.glb",      "scale": 0.20, "count": 200, "rule": "beach"},
+	{"file": KENNEY + "log.glb",                "scale": 0.25, "count": 150, "rule": "beach"},
+	# Higgsfield kit, used where Kenney has no equivalent
+	{"file": KIT + "dead_tree.glb",             "scale": 0.22, "count": 200, "rule": "treeline"},
+	{"file": KIT + "rock_outcrop.glb",          "scale": 0.40, "count": 150, "rule": "ridge"},
 ]
 
 var _terrain: TerrainData
@@ -51,7 +69,7 @@ func build(terrain: TerrainData, world_seed: int) -> void:
 		add_child(mmi)
 
 	# one cairn on the summit
-	var cairn := _load_mesh("summit_cairn")
+	var cairn := _load_mesh(KIT + "summit_cairn.glb")
 	if cairn != null:
 		var mi := MeshInstance3D.new()
 		mi.mesh = cairn
@@ -61,10 +79,9 @@ func build(terrain: TerrainData, world_seed: int) -> void:
 
 
 ## Load the first mesh found inside a GLB scene. Returns null if missing.
-func _load_mesh(name: String) -> Mesh:
-	var path := KIT + name + ".glb"
+func _load_mesh(path: String) -> Mesh:
 	if not ResourceLoader.exists(path):
-		push_warning("PropScatter: missing %s (drop the asset kit into assets/kit/)" % path)
+		push_warning("PropScatter: missing %s" % path)
 		return null
 	var scene: PackedScene = load(path)
 	if scene == null:

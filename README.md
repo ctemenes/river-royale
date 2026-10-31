@@ -84,6 +84,12 @@ tests/      Headless test scripts.
 
 Islands are procedural in-engine so every match is new and every client agrees. Blender makes everything on top of them: rock and tree kits, the summit, coastline props, water and foam material prototyping, UI 3D pieces, the trailer, and store art. Export as glTF into `assets/`. Godot can also open `.blend` files directly if Blender is installed and the path is set in Editor Settings.
 
+## Third-party
+
+- **Kenney Nature Kit** (CC0, kenney.nl): the prop kit under `assets/kenney/`. Credit not required, given gladly.
+- **Waterways** by Kasper Arnklit Frandsen (MIT): `addons/waterways/`, river/lake/waterfall meshes with baked flow and foam maps. Used for hero water (lakes, waterfalls, the sea edge); the 80 player rivers stay on the runtime ribbon system because Waterways bakes per river in the editor.
+- Higgsfield / Tripo generated props under `assets/kit/` (our own generations).
+
 ## Credit
 
 Concept inspired by the "Playing as a River in a Battle Royale" concept trailer by bonkbureau ("making trailers for games I wish existed"). The mechanics, code, name, and art here are original.
