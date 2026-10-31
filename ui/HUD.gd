@@ -8,6 +8,7 @@ var dist_label: Label
 var vol_label: Label
 var name_label: Label
 var left_label: Label
+var surge_label: Label
 var feed: VBoxContainer
 var end_panel: PanelContainer
 var end_title: Label
@@ -49,11 +50,13 @@ func _ready() -> void:
 	root.add_child(ident)
 	name_label = _label(26, WATER, HORIZONTAL_ALIGNMENT_LEFT)
 	left_label = _label(14, Color(0.7, 0.78, 0.85), HORIZONTAL_ALIGNMENT_LEFT)
+	surge_label = _label(14, Color(0.7, 0.78, 0.85), HORIZONTAL_ALIGNMENT_LEFT)
 	ident.add_child(name_label)
 	ident.add_child(left_label)
+	ident.add_child(surge_label)
 
 	var hint := _label(13, Color(0.7, 0.78, 0.85), HORIZONTAL_ALIGNMENT_CENTER)
-	hint.text = "A / D  or  ←  →  steer      TAB  map view      absorb smaller rivers, collect springs"
+	hint.text = "A / D  or  ←  →  steer      SPACE  surge      TAB  map view      ▽ smaller: absorb it     ▲ bigger: run"
 	hint.set_anchors_preset(Control.PRESET_CENTER_BOTTOM)
 	hint.anchor_top = 1.0
 	hint.anchor_bottom = 1.0
@@ -124,6 +127,18 @@ func update(sim: RiverSim, player: RiverSim.River) -> void:
 	vol_label.text = "● %s L" % _fmt(player.vol)
 	name_label.text = player.display_name
 	left_label.text = "RIVERS LEFT: %d" % sim.remaining()
+	if sim.elapsed < RiverSim.GRACE_SECONDS:
+		surge_label.text = "SAFE FOR %d s" % int(RiverSim.GRACE_SECONDS - sim.elapsed)
+		surge_label.add_theme_color_override("font_color", WATER)
+	elif player.surging():
+		surge_label.text = "SURGE!"
+		surge_label.add_theme_color_override("font_color", Color(1.0, 0.85, 0.3))
+	elif player.can_surge():
+		surge_label.text = "SURGE READY  [space]"
+		surge_label.add_theme_color_override("font_color", Color(0.7, 0.78, 0.85))
+	else:
+		surge_label.text = "surge in %.1f s" % player.surge_cd
+		surge_label.add_theme_color_override("font_color", Color(0.5, 0.55, 0.6))
 
 
 func post(text: String, color: Color = Color.WHITE) -> void:

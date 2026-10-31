@@ -152,6 +152,8 @@ func _process(dt: float) -> void:
 		if Input.is_physical_key_pressed(KEY_D) or Input.is_physical_key_pressed(KEY_RIGHT):
 			steer += 1.0
 		player.steer = steer
+		if Input.is_physical_key_pressed(KEY_SPACE) and player.can_surge():
+			player.want_surge = true
 
 		_acc += minf(dt, 0.05)
 		while _acc >= SUBSTEP:

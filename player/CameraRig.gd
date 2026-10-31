@@ -21,8 +21,9 @@ func follow(r: RiverSim.River, dt: float) -> void:
 	var head := _terrain.world_pos(r.x, r.y, 0.5)
 	var heading := Vector3(r.hx, 0.0, r.hy)
 	var rad := r.radius()
-	var back := 9.0 + rad * 4.0
-	var up := 5.5 + rad * 2.5
+	# higher and further back than a car chase cam: you need to read the valleys ahead
+	var back := 13.0 + rad * 4.0
+	var up := 9.0 + rad * 3.0
 
 	var want_pos: Vector3
 	var want_look: Vector3
@@ -35,7 +36,7 @@ func follow(r: RiverSim.River, dt: float) -> void:
 		# keep the camera above the ground
 		var ground := _terrain.sample_w(clampf(want_pos.x, 0, TerrainData.N - 1), clampf(want_pos.z, 0, TerrainData.N - 1)) * TerrainData.HEIGHT_SCALE
 		want_pos.y = maxf(want_pos.y, ground + 2.5)
-		want_look = head + heading * 7.0
+		want_look = head + heading * 10.0
 
 	if not _initialised:
 		_pos = want_pos

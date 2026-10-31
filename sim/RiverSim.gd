@@ -8,8 +8,12 @@ extends RefCounted
 
 const RIVER_COUNT := 80
 const SPRING_COUNT := 110
-const GRACE_SECONDS := 10.0      # no absorption before this
-const ABSORB_RATIO := 1.2        # must be this much bigger to absorb
+const GRACE_SECONDS := 20.0      # no absorption before this
+const ABSORB_RATIO := 1.5        # must be this much bigger to absorb
+const SURGE_TIME := 1.5
+const SURGE_COOLDOWN := 6.0
+const SURGE_COST := 0.04         # fraction of volume
+const SURGE_SPEED := 1.8
 const START_VOLUME_MIN := 8000.0
 const START_VOLUME_MAX := 14000.0
 
@@ -47,6 +51,16 @@ class River:
 	var retarget := 0.0
 	var stuck := 0.0
 	var killer := ""
+	var aggression := 0.0  # bots: 0 = farmer, 1 = hunter
+	var want_surge := false  # input: set true to trigger a surge this tick
+	var surge_timer := 0.0
+	var surge_cd := 0.0
+
+	func surging() -> bool:
+		return surge_timer > 0.0
+
+	func can_surge() -> bool:
+		return surge_cd <= 0.0 and not surging()
 
 	func radius() -> float:
 		return 0.25 + sqrt(vol) / 900.0
@@ -96,7 +110,7 @@ func setup(t: TerrainData, world_seed: int, player_names: Array[String]) -> void
 			r.display_name = pool[i % pool.size()]
 			r.is_bot = true
 		var a := _rng.randf() * TAU
-		var dist := 3.0 + _rng.randf() * 11.0
+		var dist := 4.0 + _rng.randf() * 14.0
 		r.x = terrain.summit.x + cos(a) * dist
 		r.y = terrain.summit.y + sin(a) * dist
 		r.hx = cos(a)
@@ -104,6 +118,9 @@ func setup(t: TerrainData, world_seed: int, player_names: Array[String]) -> void
 		r.vol = _rng.randf_range(START_VOLUME_MIN, START_VOLUME_MAX)
 		r.path.append(Vector2(r.x, r.y))
 		r.color = Color.from_hsv(_rng.randf(), 0.7, 0.95) if r.is_bot else Color(0.22, 0.84, 0.82)
+		# a few hunters, most farmers
+		var a := _rng.randf()
+		r.aggression = a * a
 		rivers.append(r)
 
 	var tries := 0
@@ -162,11 +179,20 @@ func step(dt: float) -> void:
 		if r.is_bot:
 			r.steer = _bot_steer(r, active, h_here, dt)
 
+		# surge
+		r.surge_cd = maxf(0.0, r.surge_cd - dt)
+		r.surge_timer = maxf(0.0, r.surge_timer - dt)
+		if r.want_surge and r.can_surge():
+			r.surge_timer = SURGE_TIME
+			r.surge_cd = SURGE_COOLDOWN
+			r.vol *= 1.0 - SURGE_COST
+		r.want_surge = false
+
 		var px := -r.hy
 		var py := r.hx
 		var gravity := 0.10 + slope * 0.25
-		var nx := r.hx * 0.86 + fx * gravity + px * r.steer * 0.22
-		var ny := r.hy * 0.86 + fy * gravity + py * r.steer * 0.22
+		var nx := r.hx * 0.86 + fx * gravity + px * r.steer * 0.30
+		var ny := r.hy * 0.86 + fy * gravity + py * r.steer * 0.30
 		var l := sqrt(nx * nx + ny * ny)
 		if l > 0.0:
 			nx /= l
@@ -182,7 +208,10 @@ func step(dt: float) -> void:
 		r.hx = nx
 		r.hy = ny
 
-		var speed := (1.0 + slope * 1.6) * (1.0 + log(r.vol / 8000.0 + 1.0) / log(10.0) * 0.25)
+		# size barely affects speed: big rivers cannot simply run you down
+		var speed := (1.0 + slope * 1.6) * (1.0 + log(r.vol / 8000.0 + 1.0) / log(10.0) * 0.08)
+		if r.surging():
+			speed *= SURGE_SPEED
 		var mv := speed * dt
 		r.x = clampf(r.x + nx * mv, 1.0, N - 2.0)
 		r.y = clampf(r.y + ny * mv, 1.0, N - 2.0)
@@ -261,35 +290,41 @@ func _bot_steer(r: River, active: Array[River], h_here: float, dt: float) -> flo
 	var tx := 0.0
 	var ty := 0.0
 	var w := 0
+	var threatened := false
+	var hunting := false
+	var hunt_range := 36.0 + r.aggression * 100.0     # squared cells
 	for o in active:
 		if o == r:
 			continue
 		var dx := o.x - r.x
 		var dy := o.y - r.y
 		var d2 := dx * dx + dy * dy
-		if d2 < 144.0:
-			var d := sqrt(d2)
-			if d < 0.001:
-				d = 0.001
-			var k := 0.0
-			if o.vol < r.vol * 0.85:
-				k = 1.0            # chase smaller
-			elif o.vol > r.vol * 1.15:
-				k = -1.6           # flee bigger
-			tx += dx / d * k
-			ty += dy / d * k
-			w += 1
+		if d2 > 144.0:
+			continue
+		var d := maxf(sqrt(d2), 0.001)
+		var k := 0.0
+		if o.vol > r.vol * 1.3:
+			k = -1.6                       # flee anything that could eat us
+			if d2 < 36.0:
+				threatened = true
+		elif o.vol * ABSORB_RATIO < r.vol and d2 < hunt_range and _rng.randf() < r.aggression:
+			k = 0.6 + r.aggression         # hunters chase clearly smaller prey
+			hunting = true
+		tx += dx / d * k
+		ty += dy / d * k
+		w += 1
 	if r.target_spring >= 0:
 		var s := springs[r.target_spring]
 		if not s.taken:
 			var dx := s.x - r.x
 			var dy := s.y - r.y
-			var d := sqrt(dx * dx + dy * dy)
-			if d < 0.001:
-				d = 0.001
-			tx += dx / d * 0.8
-			ty += dy / d * 0.8
+			var d := maxf(sqrt(dx * dx + dy * dy), 0.001)
+			tx += dx / d * 0.9
+			ty += dy / d * 0.9
 			w += 1
+	# surge to escape, or to close on prey if aggressive
+	if r.can_surge() and (threatened or (hunting and r.aggression > 0.6)):
+		r.want_surge = true
 	if w == 0:
 		return 0.0
 	var px := -r.hy
