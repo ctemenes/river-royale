@@ -15,7 +15,7 @@ extends RefCounted
 const N := 192                 # cells per side
 const SEA := 0.30              # sea level in height units
 const CELL_KM := 0.1           # 100 m per cell -> ~19 km island
-const HEIGHT_SCALE := 16.0     # world units per height unit (vertical exaggeration)
+const HEIGHT_SCALE := 24.0     # world units per height unit (vertical exaggeration)
 
 var H := PackedFloat32Array()
 var W := PackedFloat32Array()

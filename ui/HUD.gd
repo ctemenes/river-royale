@@ -126,7 +126,9 @@ func update(sim: RiverSim, player: RiverSim.River) -> void:
 	dist_label.text = "%.2f KM TO SEA" % sim.terrain.km_to_sea(player.x, player.y)
 	vol_label.text = "● %s L" % _fmt(player.vol)
 	name_label.text = player.display_name
-	left_label.text = "RIVERS LEFT: %d" % sim.remaining()
+	var chevrons := "▲".repeat(clampi(int(player.slope * 3.0) + 1, 1, 5))
+	var grade := "FLAT" if player.slope < 0.08 else ("GENTLE" if player.slope < 0.3 else ("STEEP" if player.slope < 0.8 else "FALLS"))
+	left_label.text = "RIVERS LEFT: %d      GRADE %s %s" % [sim.remaining(), chevrons, grade]
 	if sim.elapsed < RiverSim.GRACE_SECONDS:
 		surge_label.text = "SAFE FOR %d s" % int(RiverSim.GRACE_SECONDS - sim.elapsed)
 		surge_label.add_theme_color_override("font_color", WATER)

@@ -17,7 +17,9 @@ var _terrain: TerrainData
 var _ribbons: Array[MeshInstance3D] = []
 var _heads: Array[MeshInstance3D] = []
 var _labels: Array[Label3D] = []
-var _materials: Array[StandardMaterial3D] = []
+var _materials: Array[ShaderMaterial] = []
+var _banks: Array[MeshInstance3D] = []
+var _bank_mat: StandardMaterial3D
 var _last_count: PackedInt32Array = PackedInt32Array()
 var _timer := 0.0
 var _player_id := 0
@@ -33,6 +35,8 @@ func setup(sim: RiverSim, terrain: TerrainData, player_id: int) -> void:
 	_heads.clear()
 	_labels.clear()
 	_materials.clear()
+	_banks.clear()
+	_bank_mat = Materials.bank()
 	_last_count.resize(sim.rivers.size())
 
 	var head_mesh := SphereMesh.new()
@@ -40,15 +44,13 @@ func setup(sim: RiverSim, terrain: TerrainData, player_id: int) -> void:
 	head_mesh.height = 1.0
 
 	for r in sim.rivers:
-		var mat := StandardMaterial3D.new()
-		mat.albedo_color = r.color
-		mat.emission_enabled = true
-		mat.emission = r.color
-		mat.emission_energy_multiplier = 0.35
-		mat.roughness = 0.2
-		mat.metallic = 0.1
-		mat.cull_mode = BaseMaterial3D.CULL_DISABLED
+		var mat := Materials.river(r.color)
 		_materials.append(mat)
+
+		var bank := MeshInstance3D.new()
+		bank.material_override = _bank_mat
+		add_child(bank)
+		_banks.append(bank)
 
 		var mi := MeshInstance3D.new()
 		mi.material_override = mat
@@ -108,25 +110,25 @@ func update(dt: float) -> void:
 		else:
 			lbl.visible = false
 
-		if not r.alive and _materials[i].emission_energy_multiplier > 0.0:
-			# dead river: fade to a pale opaque channel. No transparency switch here on
-			# purpose: changing transparency at runtime forces a shader recompile
-			# mid-frame, which some drivers (Intel Arc) do not survive.
-			_materials[i].albedo_color = Color(0.62, 0.74, 0.78)
-			_materials[i].emission_energy_multiplier = 0.0
+		if not r.alive and float(_materials[i].get_shader_parameter("dead")) < 0.5:
+			# uniform change only: no shader recompile, which some drivers do not survive
+			_materials[i].set_shader_parameter("dead", 1.0)
+		elif active:
+			_materials[i].set_shader_parameter("flow_speed", 1.0 + minf(1.5, r.slope) * 1.2 + (0.8 if r.surging() else 0.0))
 
 		if rebuild and (active or _last_count[i] != r.path.size()):
-			_build_ribbon(_ribbons[i], r)
+			_build_ribbon(_ribbons[i], r, 1.0, LIFT)
+			_build_ribbon(_banks[i], r, 1.7, LIFT * 0.4)
 			_last_count[i] = r.path.size()
 
 
-func _build_ribbon(mi: MeshInstance3D, r: RiverSim.River) -> void:
+func _build_ribbon(mi: MeshInstance3D, r: RiverSim.River, width_mul: float, lift: float) -> void:
 	var p := r.path
 	var n := p.size()
 	if n < 2:
 		mi.mesh = null
 		return
-	var half := maxf(0.18, r.radius() * 0.5) * (0.5 if not r.alive else 1.0)
+	var half := maxf(0.18, r.radius() * 0.5) * (0.5 if not r.alive else 1.0) * width_mul
 	# left/right edge positions for every path point
 	var left := PackedVector3Array()
 	var right := PackedVector3Array()
@@ -144,8 +146,8 @@ func _build_ribbon(mi: MeshInstance3D, r: RiverSim.River) -> void:
 		var w := half * clampf(0.25 + float(k) / maxf(1.0, n * 0.6), 0.3, 1.0)
 		var a := p[k] + perp * w
 		var b := p[k] - perp * w
-		left[k] = _terrain.world_pos(a.x, a.y, LIFT)
-		right[k] = _terrain.world_pos(b.x, b.y, LIFT)
+		left[k] = _terrain.world_pos(a.x, a.y, lift)
+		right[k] = _terrain.world_pos(b.x, b.y, lift)
 
 	var st := SurfaceTool.new()
 	st.begin(Mesh.PRIMITIVE_TRIANGLES)
@@ -166,4 +168,5 @@ func _build_ribbon(mi: MeshInstance3D, r: RiverSim.River) -> void:
 		st.add_index(r1)
 		st.add_index(l1)
 	st.generate_normals()
+	st.generate_tangents()
 	mi.mesh = st.commit()

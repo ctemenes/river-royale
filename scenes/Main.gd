@@ -63,8 +63,8 @@ func _build_world() -> void:
 	add_child(env)
 
 	var sun := DirectionalLight3D.new()
-	sun.rotation_degrees = Vector3(-48, 35, 0)
-	sun.light_energy = 1.3
+	sun.rotation_degrees = Vector3(-38, 40, 0)
+	sun.light_energy = 1.5
 	sun.shadow_enabled = true
 	sun.directional_shadow_max_distance = 160
 	add_child(sun)
@@ -86,12 +86,7 @@ func _build_world() -> void:
 	var plane := PlaneMesh.new()
 	plane.size = Vector2(TerrainData.N * 4, TerrainData.N * 4)
 	sea.mesh = plane
-	var sm := StandardMaterial3D.new()
-	sm.albedo_color = Color(0.1, 0.42, 0.55, 0.82)
-	sm.transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
-	sm.roughness = 0.05
-	sm.metallic = 0.2
-	sea.material_override = sm
+	sea.material_override = Materials.sea()
 	sea.position = Vector3(TerrainData.N * 0.5, TerrainData.SEA * TerrainData.HEIGHT_SCALE + 0.05, TerrainData.N * 0.5)
 	add_child(sea)
 

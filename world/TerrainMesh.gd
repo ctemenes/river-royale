@@ -34,11 +34,7 @@ func build(t: TerrainData) -> void:
 	st.generate_normals()
 	mesh = st.commit()
 
-	var mat := StandardMaterial3D.new()
-	mat.vertex_color_use_as_albedo = true
-	mat.roughness = 0.95
-	mat.cull_mode = BaseMaterial3D.CULL_DISABLED
-	material_override = mat
+	material_override = Materials.terrain()
 
 
 static func _color_for(t: TerrainData, x: int, y: int) -> Color:

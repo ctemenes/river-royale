@@ -52,6 +52,7 @@ class River:
 	var stuck := 0.0
 	var killer := ""
 	var aggression := 0.0  # bots: 0 = farmer, 1 = hunter
+	var slope := 0.0       # last measured grade, 0 flat .. 1.5 very steep
 	var want_surge := false  # input: set true to trigger a surge this tick
 	var surge_timer := 0.0
 	var surge_cd := 0.0
@@ -175,6 +176,7 @@ func step(dt: float) -> void:
 		var fy := terrain.FLOW_DY[ci]
 		var h_here := terrain.sample_w(r.x, r.y)
 		var slope := clampf((h_here - terrain.sample_w(r.x + fx * 1.5, r.y + fy * 1.5)) * 30.0, 0.0, 1.5)
+		r.slope = slope
 
 		if r.is_bot:
 			r.steer = _bot_steer(r, active, h_here, dt)
@@ -209,7 +211,7 @@ func step(dt: float) -> void:
 		r.hy = ny
 
 		# size barely affects speed: big rivers cannot simply run you down
-		var speed := (1.0 + slope * 1.6) * (1.0 + log(r.vol / 8000.0 + 1.0) / log(10.0) * 0.08)
+		var speed := (0.7 + slope * 2.4) * (1.0 + log(r.vol / 8000.0 + 1.0) / log(10.0) * 0.08)
 		if r.surging():
 			speed *= SURGE_SPEED
 		var mv := speed * dt
