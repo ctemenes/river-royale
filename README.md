@@ -6,6 +6,8 @@ Godot 4.7, GDScript. Target: Steam (Windows, Linux, macOS), online multiplayer, 
 
 ## Run it
 
+Clone with `git clone https://github.com/ctemenes/river-royale`, or double-click `sync.bat` in an existing clone to pull the latest and open Godot.
+
 1. Install [Godot 4.x](https://godotengine.org/download) (standard build, not .NET).
 2. Open Godot, Import, pick this folder's `project.godot`.
 3. Press F5.
@@ -20,6 +22,10 @@ godot --headless -s tests/sim_test.gd
 ```
 
 Runs a full 80-bot match with no rendering, prints timings and the leaderboard, and checks that two matches from the same seed are identical. That determinism check is the contract the multiplayer server will rely on: keep `sim/` free of node access and unseeded randomness.
+
+## Asset pipeline
+
+`assets/manifest.json` lists every generated model with its download URL. The `fetch-assets` GitHub Action downloads anything missing into `assets/kit/` and commits it, so adding a model is one manifest line. `world/PropScatter.gd` places the kit by terrain rules.
 
 ## Layout
 

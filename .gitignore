@@ -3,3 +3,4 @@
 export/
 *.tmp
 .DS_Store
+tools/godot_path.txt

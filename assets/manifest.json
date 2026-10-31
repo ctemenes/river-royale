@@ -1,0 +1,17 @@
+{
+  "_comment": "Prop kit manifest. The fetch-assets GitHub Action downloads each url into assets/kit/<name>.glb and commits it. Add a line, push, wait a minute.",
+  "kit": [
+    {"name": "boulder",      "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3KqEOLmNVWajtAXjSxaHh7SylC7/hf_20261030_235836_43151c67-9506-41f5-80ff-cf3d436c6b6a.glb", "metres": 0.5, "source": "higgsfield/tripo_3d 2026-10-31"},
+    {"name": "rock_outcrop", "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3KqEOLmNVWajtAXjSxaHh7SylC7/hf_20261030_235841_849a3b26-e5b0-4062-a1f6-2f47746482f6.glb", "metres": 1.2, "source": "higgsfield/tripo_3d 2026-10-31"},
+    {"name": "pine_tree",    "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3KqEOLmNVWajtAXjSxaHh7SylC7/hf_20261030_235846_e2b210a5-5446-40ce-b7b0-04b2e65f1749.glb", "metres": 1.5, "source": "higgsfield/tripo_3d 2026-10-31"},
+    {"name": "dead_tree",    "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3KqEOLmNVWajtAXjSxaHh7SylC7/hf_20261030_235851_a0ab5a51-987c-4535-987d-f314b2f7f3f6.glb", "metres": 2.5, "source": "higgsfield/tripo_3d 2026-10-31"},
+    {"name": "summit_cairn", "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3KqEOLmNVWajtAXjSxaHh7SylC7/hf_20261030_235856_f40c4882-ec54-4dda-81d0-bd312c749b60.glb", "metres": 0.6, "source": "higgsfield/tripo_3d 2026-10-31"},
+    {"name": "spring",       "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3KqEOLmNVWajtAXjSxaHh7SylC7/hf_20261030_235901_446bbbd1-1f4c-4e93-8a9c-40612430bd5e.glb", "metres": 1.9, "source": "higgsfield/tripo_3d 2026-10-31"},
+    {"name": "driftwood",    "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3KqEOLmNVWajtAXjSxaHh7SylC7/hf_20261030_235909_8399c01c-92b9-4e65-b529-78dfe908d1bc.glb", "metres": 1.4, "source": "higgsfield/tripo_3d 2026-10-31"},
+    {"name": "shrub",        "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3KqEOLmNVWajtAXjSxaHh7SylC7/hf_20261030_235913_c74e5995-149f-4a98-a452-738606c651f6.glb", "metres": 1.0, "source": "higgsfield/tripo_3d 2026-10-31"}
+  ],
+  "keyart": [
+    {"name": "keyart_a", "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3KqEOLmNVWajtAXjSxaHh7SylC7/hf_20261030_235926_eae95001-94f2-447a-a5cd-f0997bebcafc.png"},
+    {"name": "keyart_b", "url": "https://d8j0ntlcm91z4.cloudfront.net/user_3KqEOLmNVWajtAXjSxaHh7SylC7/hf_20261030_235927_0be63b94-24de-4f29-b80f-9a5f4ee48432.png"}
+  ]
+}

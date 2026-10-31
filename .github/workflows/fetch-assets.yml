@@ -1,0 +1,55 @@
+name: fetch-assets
+
+# Downloads every entry in assets/manifest.json that is not yet in the repo
+# and commits it. Lets generated models (Higgsfield etc.) flow into the
+# project with nothing more than a manifest edit.
+
+on:
+  push:
+    paths:
+      - assets/manifest.json
+      - .github/workflows/fetch-assets.yml
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  fetch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Download missing assets
+        run: |
+          set -e
+          mkdir -p assets/kit assets/keyart
+          python3 - <<'EOF'
+          import json, os, urllib.request, sys
+          m = json.load(open("assets/manifest.json"))
+          jobs = [("assets/kit", e, ".glb") for e in m.get("kit", [])] + \
+                 [("assets/keyart", e, ".png") for e in m.get("keyart", [])]
+          got = 0
+          for folder, e, ext in jobs:
+              path = os.path.join(folder, e["name"] + ext)
+              if os.path.exists(path) and os.path.getsize(path) > 0:
+                  continue
+              print("fetching", path)
+              req = urllib.request.Request(e["url"], headers={"User-Agent": "river-royale-fetch"})
+              with urllib.request.urlopen(req, timeout=120) as r, open(path, "wb") as f:
+                  f.write(r.read())
+              got += 1
+          print("downloaded", got, "new files")
+          EOF
+
+      - name: Commit
+        run: |
+          git config user.name "river-royale-bot"
+          git config user.email "actions@users.noreply.github.com"
+          git add assets/kit assets/keyart
+          if git diff --cached --quiet; then
+            echo "nothing new"
+          else
+            git commit -m "assets: fetch from manifest"
+            git push
+          fi
