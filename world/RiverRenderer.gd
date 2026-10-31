@@ -108,9 +108,11 @@ func update(dt: float) -> void:
 		else:
 			lbl.visible = false
 
-		if not r.alive:
-			_materials[i].albedo_color = Color(0.56, 0.72, 0.77, 0.35)
-			_materials[i].transparency = BaseMaterial3D.TRANSPARENCY_ALPHA
+		if not r.alive and _materials[i].emission_energy_multiplier > 0.0:
+			# dead river: fade to a pale opaque channel. No transparency switch here on
+			# purpose: changing transparency at runtime forces a shader recompile
+			# mid-frame, which some drivers (Intel Arc) do not survive.
+			_materials[i].albedo_color = Color(0.62, 0.74, 0.78)
 			_materials[i].emission_energy_multiplier = 0.0
 
 		if rebuild and (active or _last_count[i] != r.path.size()):
