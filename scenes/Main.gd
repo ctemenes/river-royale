@@ -15,12 +15,14 @@ var rivers: RiverRenderer
 var camera: CameraRig
 var hud: HUD
 var _acc := 0.0
+var _seed := 0
 var _running := false
 var _ended := false
 
 
 func _ready() -> void:
 	var world_seed := randi()
+	_seed = world_seed
 	print("River Royale: generating island, seed %d" % world_seed)
 	var t0 := Time.get_ticks_msec()
 	terrain.generate(world_seed)
@@ -72,6 +74,11 @@ func _build_world() -> void:
 	terrain_mesh = TerrainMesh.new()
 	terrain_mesh.build(terrain)
 	add_child(terrain_mesh)
+
+	_trace("props")
+	var props := PropScatter.new()
+	props.build(terrain, _seed)
+	add_child(props)
 
 	_trace("sea")
 	# sea
